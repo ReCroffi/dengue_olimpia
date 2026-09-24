@@ -1,0 +1,14 @@
+# Python
+.venv
+__pycache__/
+
+# Dados não vão pro git, só a estrutura das pastas
+/data/raw/*
+!/data/raw/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+/data/external/*
+!/data/external/.gitkeep
+
+# Jupyter
+.ipynb_checkpoints/
