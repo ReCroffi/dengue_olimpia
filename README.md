@@ -34,19 +34,29 @@ O InfoDengue revisa as semanas mais recentes conforme chegam notificações atra
 | Etapa | Notebook | Status |
 |---|---|---|
 | Estatística descritiva | `notebooks/01_descritiva.ipynb` | em andamento |
-| Distribuições e Teorema Central do Limite | `notebooks/02_distribuicoes_tcl.ipynb` | a fazer |
+| Distribuições e Teorema Central do Limite | `notebooks/02_distribuicoes_tcl.ipynb` | em andamento (distribuições prontas, TCL a fazer) |
 | Inferência (intervalo de confiança, testes, regressão) | `notebooks/03_inferencia.ipynb` | a fazer |
 | Previsão (baselines, modelo, intervalo de previsão) | `notebooks/04_previsao.ipynb` | a fazer |
 | Backtest por temporada e limitações | `src/` | a fazer |
 
-## Primeiros achados
+## Achados
 
-Da análise descritiva dos casos semanais:
+### Estatística descritiva (notebook 01)
 
 - A mediana é 14 casos por semana e a média é 48,6, cerca de 3,5 vezes maior. A distribuição é bem assimétrica: a maioria das semanas tem poucos casos, e as temporadas de surto (34 semanas acima de 200 casos) puxam a média pra cima.
 - Metade das semanas fica entre 5 e 42 casos (intervalo interquartil de 37).
 - O desvio padrão (92,1) é quase o dobro da média. A faixa média ± 1 desvio vai de -43,5 a 140,8 casos: pega 91% das semanas, contra os ~68% esperados numa distribuição normal, e o limite de baixo nem é possível. Por isso descrevo a série com mediana e intervalo interquartil, e não com média ± desvio.
 - Semana de surto não é tratada como outlier a descartar. O surto é justamente o que o projeto quer prever.
+
+### Distribuições (notebook 02)
+
+Simulei normal, Poisson, binomial negativa e exponencial com a mesma média (~50), pra comparar forma e não escala, e pus a série real na mesma tabela.
+
+- **Quantidades de forma servem de diagnóstico porque não dependem de escala.** Numa normal, mudar média e desvio não mexe em `IQR/desvio` (≈ 1,3), na proporção dentro de 1 desvio (≈ 68%) nem na assimetria (≈ 0). Em `casos` esses números são 0,40, 91% e 3,28 — é isso que torna o desvio da normalidade mensurável, e não só visível no histograma.
+- **A Poisson está descartada.** Ela obriga variância/média = 1 (medi 1,05 na simulação). Em `casos` esse índice de dispersão é **174,5**. Como a Poisson tem um parâmetro só, fixar a média já fixa tudo: não há como ajustá-la.
+- **A binomial negativa calibrada reproduz a série.** Com dois parâmetros, casados por momentos com a média e a dispersão reais (`p = 1/174,5`, `n = 0,28`), ela chega em mediana 12 (real 14), assimetria 3,49 (real 3,28) e 90% dentro de 1 desvio (real 91%) — e nada disso entrou no ajuste. A assimetria teórica da família nesse ponto é 3,78: uma previsão que os dados podiam ter desmentido e não desmentiram.
+- **Onde ela falha:** IQR 53 contra 37, e 23,7% de semanas em zero contra 1,9% reais. Ela não representa o piso endêmico — pra gerar surtos daquele tamanho, precisa passar a maior parte do tempo em zero.
+- **O que nenhuma distribuição captura é o tempo.** A autocorrelação de lag 1 em `casos` é **0,97**; na binomial negativa calibrada, 0,02. Embaralhar as 574 semanas preserva média, mediana, IQR e assimetria — todas as colunas da tabela ficam idênticas. A distribuição responde *quão grande uma semana pode ser*, nunca *quando*. A previsão do dia 4 vive exatamente no que ela descarta.
 
 ## Limitações conhecidas
 
