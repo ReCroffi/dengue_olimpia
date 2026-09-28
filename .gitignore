@@ -9,6 +9,6 @@ __pycache__/
 !/data/processed/.gitkeep
 /data/external/*
 !/data/external/.gitkeep
-
+*.duckdb
 # Jupyter
 .ipynb_checkpoints/
